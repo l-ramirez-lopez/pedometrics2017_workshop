@@ -8,6 +8,12 @@
 #              ramirez-lopez.l@buchi.com; alexandre.wadoux@wur.nl 
 #
 # Date:        Jun 2017
+# 
+# Actualization: Melissa Lis-Gutierrez, Tatiana Moreno & Leo Ramirez-Lopez
+#               mlisg@unal.edu.co; tmorenom@unal.edu.co; 
+#               ramirez-lopez.l@buchi.com
+#
+# Date:        Feb 2022
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # Set the language of R to English
 Sys.setenv(language = "EN")
@@ -17,18 +23,18 @@ Sys.setenv(language = "EN")
 require(prospectr)
 
 
-# USER: specifiy working directy
+# USER: specify working directory
 wd <- "C:/Users/raml/Documents/pedometrics2017"
 
 # R: Set the working directory
 setwd(wd)
 
-# USER: specifiy the input files (including the subdirectory 
-# that is not specified in the working directy)
-inputfile1 <- "data/sensorRepetitions.txt"
+# USER: specify the input files (including the subdirectory 
+# that is not specified in the working directory)
+inputfile_1 <- "data/sensorRepetitions.txt"
 
 # R: read the data
-sdata <- read.table(inputfile1,
+s_data <- read.table(inputfile_1,
                     header = TRUE, 
                     check.names = FALSE, 
                     sep ="\t")
@@ -39,26 +45,26 @@ firstw <- 350
 
 
 # R: extract in one object only the spectra from the "data" table...
-spc <- sdata[,which(colnames(sdata) == firstw):ncol(sdata)]
+spc <- s_data[,which(colnames(s_data) == firstw):ncol(s_data)]
 
 # R: remove from "data" spectra...
-sdata <- sdata[,-c(which(colnames(sdata) == firstw):ncol(sdata)), drop = FALSE]
+s_data <- s_data[,-c(which(colnames(s_data) == firstw):ncol(s_data)), drop = FALSE]
 
 # R: put back the spectra in the "data" object but as a 
 # sub-element of "data"
-sdata$spc <-spc
+s_data$spc <-spc
 
 # R: remove the spc object since it is already a sub-element of "data"
 rm(spc)
 
 # R: extract from the column names of the spectra sub-element 
 # the vector of wavelengths/wavenumbers
-wavs <- colnames(sdata$spc)
+wavs <- colnames(s_data$spc)
 
 # R: Since the "wavs" vector is a character string vector
 # we will need to transform it to a numeric vector
 # NOTE that the names of the columns of the spectra 
-# must be writen only with numbers (otherwise they will not be
+# must be written only with numbers (otherwise they will not be
 # correctly converted from characters to numbers)
 wavs <- as.numeric(wavs)
 
@@ -70,7 +76,7 @@ xax <- "Wavelength, nm"
 yax <- "Reflectance"
 
 
-matplot(x = wavs, y = t(sdata$spc),
+matplot(x = wavs, y = t(s_data$spc),
         xlab = xax,
         ylab = yax,
         ylim = c(0, 1),
@@ -87,16 +93,16 @@ matplot(x = wavs, y = t(sdata$spc),
 
 # USER: Indicate the exact wavelengths at which the shits are
 # located
-sshifts <- c(1000, 1830)
+s_shifts <- c(1000, 1830)
 
 # R: Correct the spectral "shifts" using the spliceCorrection function 
-sdata$spc_corrected <- spliceCorrection(X = sdata$spc, 
+s_data$spc_corrected <- spliceCorrection(X = s_data$spc, 
                                        wav = wavs, 
-                                       splice = sshifts)
+                                       splice = s_shifts)
 
 
 # R: plot the corrected spectra...                          
-matplot(x = wavs, y = t(sdata$spc_corrected),
+matplot(x = wavs, y = t(s_data$spc_corrected),
         xlab = xax,
         ylab = yax,
         ylim = c(0, 1),
