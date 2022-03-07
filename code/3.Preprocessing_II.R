@@ -7,6 +7,12 @@
 #              ramirez-lopez.l@buchi.com; alexandre.wadoux@wur.nl 
 #
 # Date:        Jun 2017
+#
+# Actualization: Melissa Lis-Gutierrez, Tatiana Moreno & Leo Ramirez-Lopez
+#               mlisg@unal.edu.co; tmorenom@unal.edu.co; 
+#               ramirez-lopez.l@buchi.com
+#
+# Date:        Feb 2022
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # Set the language of R to English
 Sys.setenv(language = "EN")
@@ -15,18 +21,18 @@ Sys.setenv(language = "EN")
 # prospectr
 require(prospectr)
 
-# USER: specifiy working directy
+# USER: specify working directory
 wd <- "C:/Users/raml/Documents/pedometrics2017"
 
 # R: Set the working directory
 setwd(wd)
 
-# USER: specifiy the input files (including the subdirectory 
-# that is not specified in the working directy)
-inputfile1 <- "data/spectra_soil_profile_Colombia.txt"
+# USER: specify the input files (including the subdirectory 
+# that is not specified in the working directory)
+inputfile_1 <- "data/spectra_soil_profile_Colombia.txt"
 
 # read the data
-sdata <- read.table(inputfile1, 
+s_data <- read.table(inputfile_1, 
                     header = TRUE, 
                     check.names = FALSE, 
                     sep ="\t")
@@ -37,7 +43,7 @@ firstw <- 350
 
 
 # R: extract in one object only the spectra from the "data" table...
-spc <- sdata[,which(colnames(sdata) == firstw):ncol(sdata)]
+spc <- s_data[,which(colnames(s_data) == firstw):ncol(s_data)]
 
 
 # --- 1. Transformation from reflectance to absorbance ----
@@ -46,24 +52,24 @@ spc <- sdata[,which(colnames(sdata) == firstw):ncol(sdata)]
 spc <- -log(spc)
 
 # R: remove from "data" spectra...
-sdata <- sdata[,-c(which(colnames(sdata) == firstw):ncol(sdata)), drop = FALSE]
+s_data <- s_data[,-c(which(colnames(s_data) == firstw):ncol(s_data)), drop = FALSE]
 
 # R: put back the spectra in the "data" object but as a 
 # sub-element of "data"
-sdata$spc <-spc
+s_data$spc <-spc
 
 # R: remove the spc object since it is already a sub-element of "data"
 rm(spc)
 
 # R: extract from the column names of the spectra sub-element 
 # the vector of wavelengths/wavenumbers
-wavs <- colnames(sdata$spc)
+wavs <- colnames(s_data$spc)
 
 
 # R: Since the "wavs" vector is a character string vector
 # we will need to transform it to a numeric vector
 # NOTE that the names of the columns of the spectra 
-# must be writen only with numbers (otherwise they will not be
+# must be written only with numbers (otherwise they will not be
 # correctly converted from characters to numbers)
 wavs <- as.numeric(wavs)
 
@@ -75,7 +81,7 @@ xax <- "Wavelength, nm"
 yax <- "Absorbance"
 
 
-matplot(x = wavs, y = t(sdata$spc),
+matplot(x = wavs, y = t(s_data$spc),
         xlab = xax,
         ylab = yax,
         type = "l",
@@ -106,12 +112,12 @@ poly_sg <- 2
 # Note that the 2 first and last wavelengths are lost in the process
 # (i.e. the vector of wavelengths is shorter now because of the window size
 # of 11 bands. 
-# The number of wavelengths lost at the begining and 
+# The number of wavelengths lost at the beginning and 
 # at the the of the spectra is (window size  - 1)/2
-sdata$spc_sgdiff_1st <- savitzkyGolay(X = sdata$spc, m = difforder_a, p = poly_sg, w = swindow_sg) 
+s_data$spc_sgdiff_1st <- savitzkyGolay(X = s_data$spc, m = difforder_a, p = poly_sg, w = swindow_sg) 
 
 #   R: extract the vector of remaining wavelengths
-wavs_sgdiff <- colnames(sdata$spc_sgdiff_1st)
+wavs_sgdiff <- colnames(s_data$spc_sgdiff_1st)
 wavs_sgdiff <- as.numeric(wavs_sgdiff)
 
 # R: plot the spectra...
@@ -120,7 +126,7 @@ wavs_sgdiff <- as.numeric(wavs_sgdiff)
 yaxder_a <- "1st Derivarive"
 
 # R: plot the derivatives of the spectra...                          
-matplot(x = wavs_sgdiff, y = t(sdata$spc_sgdiff_1st),
+matplot(x = wavs_sgdiff, y = t(s_data$spc_sgdiff_1st),
         xlab = xax,
         ylab = yaxder_a,
         type = "l",
@@ -138,9 +144,9 @@ difforder_b <- 2
 # Note that the 2 first and last wavelengths are lost in the process
 # (i.e. the vector of wavelengths is shorter now because of the window size
 # of 11 bands. 
-# The number of wavelengths lost at the begining and 
+# The number of wavelengths lost at the beginning and 
 # at the the of the spectra is (window size  - 1)/2
-sdata$spc_sgdiff_2nd <- savitzkyGolay(X = sdata$spc, m = difforder_b, p = poly_sg, w = swindow_sg) 
+s_data$spc_sgdiff_2nd <- savitzkyGolay(X = s_data$spc, m = difforder_b, p = poly_sg, w = swindow_sg) 
 
 # R: plot the spectra...
 # USER: before plotting provide name of the y axis 
@@ -148,7 +154,7 @@ sdata$spc_sgdiff_2nd <- savitzkyGolay(X = sdata$spc, m = difforder_b, p = poly_s
 yaxder_b <- "2nd Derivarive"
 
 # R: plot the derivatives of the spectra...                          
-matplot(x = wavs_sgdiff, y = t(sdata$spc_sgdiff_2nd),
+matplot(x = wavs_sgdiff, y = t(s_data$spc_sgdiff_2nd),
         xlab = xax,
         ylab = yaxder_b,
         type = "l",
