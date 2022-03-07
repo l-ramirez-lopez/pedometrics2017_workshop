@@ -10,6 +10,12 @@
 #              ramirez-lopez.l@buchi.com; alexandre.wadoux@wur.nl 
 #
 # Date:        Jun 2017
+#
+# Actualization: Melissa Lis-Gutierrez, Tatiana Moreno & Leo Ramirez-Lopez
+#               mlisg@unal.edu.co; tmorenom@unal.edu.co; 
+#               ramirez-lopez.l@buchi.com
+#
+# Date:        Feb 2022
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # Set the language of R to English
 Sys.setenv(language = "EN")
@@ -21,18 +27,18 @@ require(prospectr)
 # pls
 require(pls)
 
-# USER: specifiy working directy
+# USER: specify working directory
 wd <- "C:/Users/raml/Documents/pedometrics2017"
 
 # R: Set the working directory
 setwd(wd)
 
-# USER: specifiy the input files (including the subdirectory 
-# that is not specified in the working directy)
-inputfile1 <- "data/br_spectra_1.txt"
+# USER: specify the input files (including the subdirectory 
+# that is not specified in the working directory)
+inputfile_1 <- "data/br_spectra_1.txt"
 
 # R: read the data
-sdata <- read.table(inputfile1, 
+s_data <- read.table(inputfile_1, 
                     header = TRUE, 
                     check.names = FALSE, 
                     sep ="\t")
@@ -42,26 +48,26 @@ sdata <- read.table(inputfile1,
 firstw <- 352
 
 # R: extract in one object only the spectra from the "data" table...
-spc <- as.matrix(sdata[,which(colnames(sdata) == firstw):ncol(sdata)])
+spc <- as.matrix(s_data[,which(colnames(s_data) == firstw):ncol(s_data)])
 
 # R: remove from "data" spectra...
-sdata <- sdata[,-c(which(colnames(sdata) == firstw):ncol(sdata)), drop = FALSE]
+s_data <- s_data[,-c(which(colnames(s_data) == firstw):ncol(s_data)), drop = FALSE]
 
 # R: put back the spectra in the "data" object but as a 
 # sub-element of "data"
-sdata$spc <-spc
+s_data$spc <-spc
 
 # R: remove the spc object since it is already a sub-element of "data"
 rm(spc)
 
 # R: extract from the column names of the spectra sub-element 
 # the vector of wavelengths/wavenumbers
-wavs <- colnames(sdata$spc)
+wavs <- colnames(s_data$spc)
 
 # R: Since the "wavs" vector is a character string vector
 # we will need to transform it to a numeric vector
 # NOTE that the names of the columns of the spectra 
-# must be writen only with numbers (otherwise they will not be
+# must be written only with numbers (otherwise they will not be
 # correctly converted from characters to numbers)
 wavs <- as.numeric(wavs)
 
@@ -73,7 +79,7 @@ xax <- "Wavelength, nm"
 yax <- "Reflectance"
 
 
-matplot(x = wavs, y = t(sdata$spc),
+matplot(x = wavs, y = t(s_data$spc),
         xlab = xax,
         ylab = yax,
         type = "l",
@@ -90,25 +96,25 @@ grid()
 # The msc function from the pls package can be used to apply 
 # this type of correction
 
-# R: apply the msc fucntion to the spectra
-sdata$spc_msc <- msc(X = sdata$spc)
+# R: apply the msc function to the spectra
+s_data$spc_msc <- prospectr::msc(X = s_data$spc)
 
 # Now let's say we collected new spectra and we need to preprocess
 # them in the same way (e.g. msc) the old spectra was processed. So we need to use
 # the information derived from the old data (average spectrum)
 # in order to be able to correct the new data 
 # This can be automatically done by applying the predict function 
-# on the new data and using the information stored in the sdata$spc_msc sub-element
+# on the new data and using the information stored in the s_data$spc_msc sub-element
 
-# First specifiy the input file where the new spectra is 
+# First specify the input file where the new spectra is 
 # (including the subdirectory  that is not specified in 
-# the working directy)
-inputfile2 <- "data/br_spectra_2.txt"
+# the working directory)
+inputfile_2 <- "data/br_spectra_2.txt"
 
 
 # USER: read the new data and organize it
 # R: read the data
-new_data <- read.table(inputfile2, 
+new_data <- read.table(inputfile_2, 
                        header = TRUE, 
                        check.names = FALSE, 
                        sep ="\t")
@@ -129,18 +135,19 @@ rm(spc)
 
 # R: apply the msc correction to the new spectra 
 # so that the spectra is corrected using the average spectrum 
-# of the old data as the reference for the corrcetion
-new_data$spc_msc <- predict(object = sdata$spc_msc, newdata = new_data$spc)
+# of the old data as the reference for the correction
+new_data$spc_msc <- prospectr::msc(new_data$spc, 
+                                   reference_spc = attr(s_data$spc_msc, "Reference spectrum"))
 
 # how does the predict function work?
-# it uses a "model" object that it is stored in the sdata$spc_msc and 
+# it uses a "model" object that it is stored in the s_data$spc_msc and 
 # applies it to the new_data$spc
-# This is a generic function that is extensively used in predictiosn from 
+# This is a generic function that is extensively used in predictions from 
 # quantitative and qualitative models.
-# In this case the predict function is a kind of wrap of the real fucntion which 
+# In this case the predict function is a kind of wrap of the real function which 
 # can be accessed by typeing in your R console pls:::predict.msc
 # for other predict function it works like this most of the time
-# [name of the package]::predict.[name of the fucntion]
+# [name of the package]::predict.[name of the function]
 
 # R: plot the msc spectra of the old and new data
 # USER: before plotting provide the new names of the y axis 
@@ -155,7 +162,7 @@ colo <- rgb(red = 0, green = 0, blue = 0, alpha = 0.3)
 colnw <- rgb(red = 1, green = 0, blue = 0, alpha = 0.3)
 
 # R: create the plots
-matplot(x = wavs, y = t(sdata$spc_msc),
+matplot(x = wavs, y = t(s_data$spc_msc),
         xlab = xax,
         ylab = yax_msc,
         type = "l",
@@ -178,7 +185,7 @@ legend("topright",
 # be used to apply this type of correction
 
 # R: apply the Standard Normal Variate on the spectra
-sdata$spc_snv <- standardNormalVariate(X = sdata$spc)
+s_data$spc_snv <- standardNormalVariate(X = s_data$spc)
  
 # R: apply the Standard Normal Variate on the new spectra 
 # in this case we do not need any information form the old data
@@ -193,7 +200,7 @@ yax_snv <- "snv(Reflectance)"
 
 
 # R: create the plots
-matplot(x = wavs, y = t(sdata$spc_snv),
+matplot(x = wavs, y = t(s_data$spc_snv),
         xlab = xax,
         ylab = yax_snv,
         type = "l",
@@ -222,7 +229,7 @@ centering <- TRUE
 scaling <- FALSE
 
 # R: center the data
-sdata$spc_snv_cnt <- scale(sdata$spc_snv, center = centering, scale = scaling)
+s_data$spc_snv_cnt <- scale(s_data$spc_snv, center = centering, scale = scaling)
 
 # R: plot the data
 
@@ -232,7 +239,7 @@ sdata$spc_snv_cnt <- scale(sdata$spc_snv, center = centering, scale = scaling)
 yax_snv <- "Centred snv(Reflectance)"
 
 # R: create the plots
-matplot(x = wavs, y = t(sdata$spc_snv_cnt),
+matplot(x = wavs, y = t(s_data$spc_snv_cnt),
         xlab = xax,
         ylab = yax_snv,
         type = "l",
@@ -248,7 +255,7 @@ centering <- TRUE
 scaling <- TRUE
 
 # R: center the data
-sdata$spc_snv_cs <- scale(sdata$spc_snv, center = centering, scale = scaling)
+s_data$spc_snv_cs <- scale(s_data$spc_snv, center = centering, scale = scaling)
 
 
 # R: plot the data
@@ -259,7 +266,7 @@ sdata$spc_snv_cs <- scale(sdata$spc_snv, center = centering, scale = scaling)
 yax_snv <- "Centred and scaled snv(Reflectance)"
 
 # R: create the plots
-matplot(x = wavs, y = t(sdata$spc_snv_cs),
+matplot(x = wavs, y = t(s_data$spc_snv_cs),
         xlab = xax,
         ylab = yax_snv,
         type = "l",
@@ -267,10 +274,4 @@ matplot(x = wavs, y = t(sdata$spc_snv_cs),
         col = colo,
         main = "Centred and scaled snv(spectra)")
 grid()
-
-
-
-
-
-
 
