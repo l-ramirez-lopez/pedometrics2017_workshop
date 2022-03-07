@@ -10,6 +10,12 @@
 #              ramirez-lopez.l@buchi.com; alexandre.wadoux@wur.nl 
 #
 # Date:        Jun 2017
+#
+# Actualization: Melissa Lis-Gutierrez, Tatiana Moreno & Leo Ramirez-Lopez
+#               mlisg@unal.edu.co; tmorenom@unal.edu.co; 
+#               ramirez-lopez.l@buchi.com
+#
+# Date:        Feb 2022
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # Set the language of R to English
 Sys.setenv(language = "EN")
@@ -18,18 +24,18 @@ Sys.setenv(language = "EN")
 # prospectr
 require(prospectr)
 
-# USER: specifiy working directy
+# USER: specifiy working directory
 wd <- "C:/Users/raml/Documents/pedometrics2017"
 
 # R: Set the working directory
 setwd(wd)
 
-# USER: specifiy the input files (including the subdirectory 
-# that is not specified in the working directy)
-inputfile1 <- "data/noisy_spectra.txt"
+# USER: specify the input files (including the subdirectory 
+# that is not specified in the working directory)
+inputfile_1 <- "data/noisy_spectra.txt"
 
 # read the data
-sdata <- read.table(inputfile1, 
+s_data <- read.table(inputfile_1, 
                     header = TRUE, 
                     check.names = FALSE, 
                     sep ="\t")
@@ -40,7 +46,7 @@ firstw <- 350
 
 
 # R: extract in one object only the spectra from the "data" table...
-spc <- sdata[,which(colnames(sdata) == firstw):ncol(sdata)]
+spc <- s_data[,which(colnames(s_data) == firstw):ncol(s_data)]
 
 
 # --- 1. Transformation from reflectance to absorbance ----
@@ -49,11 +55,11 @@ spc <- sdata[,which(colnames(sdata) == firstw):ncol(sdata)]
 spc <- -log(spc)
 
 # R: remove from "data" spectra...
-sdata <- sdata[,-c(which(colnames(sdata) == firstw):ncol(sdata)), drop = FALSE]
+s_data <- s_data[,-c(which(colnames(s_data) == firstw):ncol(s_data)), drop = FALSE]
 
 # R: put back the spectra in the "data" object but as a 
 # sub-element of "data"
-sdata$spc <-spc
+s_data$spc <-spc
 
 # R: remove the spc object since it is already a sub-element of "data"
 rm(spc)
@@ -62,12 +68,12 @@ rm(spc)
 # --- 2. Noise removal ----
 # R: extract from the column names of the spectra sub-element 
 # the vector of wavelengths/wavenumbers
-wavs <- colnames(sdata$spc)
+wavs <- colnames(s_data$spc)
 
 # R: Since the "wavs" vector is a character string vector
 # we will need to transform it to a numeric vector
 # NOTE that the names of the columns of the spectra 
-# must be writen only with numbers (otherwise they will not be
+# must be written only with numbers (otherwise they will not be
 # correctly converted from characters to numbers)
 wavs <- as.numeric(wavs)
 
@@ -79,7 +85,7 @@ xax <- "Wavelength, nm"
 yax <- "Absorbance"
 
 
-matplot(x = wavs, y = t(sdata$spc),
+matplot(x = wavs, y = t(s_data$spc),
         xlab = xax,
         ylab = yax,
         type = "l",
@@ -96,6 +102,7 @@ grid()
 # First option: Reduce the noise by applying a moving average window 
 #   using the movav function 
 #   USER: First define the window size (e.g. 11 bands)
+
 swindow_ma <- 11
 
 #   R: Apply the movav function to the spectra
@@ -104,10 +111,10 @@ swindow_ma <- 11
 #   of 11 bands)
 # The number of wavelengths lost at the begining and 
 # at the the of the spectra is (window size  - 1)/2
-sdata$spc_ma <- movav(X = sdata$spc, w = swindow_ma)  
+s_data$spc_ma <- movav(X = s_data$spc, w = swindow_ma)  
 
 #   R: extract the vector of remaining wavelengths
-wavs_ma <- colnames(sdata$spc_ma)
+wavs_ma <- colnames(s_data$spc_ma)
 wavs_ma <- as.numeric(wavs_ma)
 
 
@@ -125,15 +132,15 @@ poly_sg <- 2
 #   Note that the 5 first and last wavelengths are lost in the process
 #   (i.e. the vector of wavelengths is shorter now because of the window size
 #   of 11 bands)
-sdata$spc_sg <- savitzkyGolay(X = sdata$spc, m = 0, p = poly_sg, w = swindow_sg) 
+s_data$spc_sg <- savitzkyGolay(X = s_data$spc, m = 0, p = poly_sg, w = swindow_sg) 
 
 #   R: extract the vector of remaining wavelengths
-wavs_sg <- colnames(sdata$spc_sg)
+wavs_sg <- colnames(s_data$spc_sg)
 wavs_sg <- as.numeric(wavs_sg)
 
 
 # R: plot the de-noised spectra resulting from applying the moving average...                          
-matplot(x = wavs_ma, y = t(sdata$spc_ma),
+matplot(x = wavs_ma, y = t(s_data$spc_ma),
         xlab = xax,
         ylab = yax,
         type = "l",
@@ -143,7 +150,7 @@ matplot(x = wavs_ma, y = t(sdata$spc_ma),
 grid()
 
 # R: plot the de-noised spectra resulting from applying the Savitzky-Golay filter...                          
-matplot(x = wavs_sg, y = t(sdata$spc_sg),
+matplot(x = wavs_sg, y = t(s_data$spc_sg),
         xlab = xax,
         ylab = yax,
         type = "l",
