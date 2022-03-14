@@ -125,25 +125,27 @@ plot(x = pc_spectra$scores[, 1],
 grid()
 
 # To obtain the pairwise Mahalanobis distances we can use the
-# dissimilarity function of the resemble package
+# f_diss function of the resemble package
 
 # R: compute the pairwise Mahalanobis distances
-md_1 <- dissimilarity(Xr = pc_spectra$scores,
-                      Xu = NULL,
-                      diss_method = "euclid",
-                      center = TRUE, scale = TRUE
+md_1 <- f_diss(
+  Xr = pc_spectra$scores,
+  Xu = NULL,
+  diss_method = "mahalanobis",
+  center = TRUE
 )
 
 
 # Since the Mahalanobis distance is equivalent to the Euclidean distance
-# after the score variables are centered and standardized/scale to unit variance,
+# after the score variables are centered and standardized/scaled to unit variance,
 # We can also apply the Euclidean distance algorithm to the centered and scale PC scores
 
 # R: compute the pairwise Euclidean distances on the entered and scale PC scores
-md_2 <- dissimilarity(Xr = pc_spectra$scores,
-                      Xu = NULL,
-                      diss_method = "euclid",
-                      center = TRUE, scale = TRUE
+md_2 <- dissimilarity(
+  Xr = pc_spectra$scores,
+  Xu = NULL,
+  diss_method = "euclid",
+  center = TRUE, scale = TRUE
 )
 
 # Compare the first three pairwise distances for md_1 and md_2
