@@ -8,6 +8,12 @@
 #              ramirez-lopez.l@buchi.com; alexandre.wadoux@wur.nl 
 #
 # Date:        Jun 2017
+#
+# Actualization: Melissa Lis-Gutierrez, Tatiana Moreno & Leo Ramirez-Lopez
+#               mlisg@unal.edu.co; tmorenom@unal.edu.co; 
+#               ramirez-lopez.l@buchi.com
+#
+# Date:        Feb 2022
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # Set the language of R to English
 Sys.setenv(language = "EN")
@@ -17,77 +23,61 @@ Sys.setenv(language = "EN")
 require(resemble)
 
 
-# USER: specifiy working directy
+# USER: specify working directory
 wd <- "C:/Users/raml/Documents/pedometrics2017"
 
 
 # R: Set the working directory
 setwd(wd)
 
-# USER: specifiy the input files (including the subdirectory 
-# that is not specified in the working directy)
-inputfile1 <- "data/syntheticCalSampling.txt"
+# USER: specify the input files (including the subdirectory 
+# that is not specified in the working directory)
+inputfile_1 <- "data/syntheticCalSampling.txt"
 
 # R: read the data
-griddata <- read.table(inputfile1, 
+grid_data <- read.table(inputfile_1, 
                        header = TRUE, 
                        check.names = FALSE, 
                        sep ="\t")
 
 # R: get a summary of the data (Compactly Display the Structure of the object)
-str(griddata)
+str(grid_data)
 
-# griddata contains a two dimensional synthetic where there is an 
+# grid_data contains a two dimensional synthetic where there is an 
 # outlier
 # R: Plot the grid
-plot(griddata$x1, griddata$x2)
+plot(grid_data$x1, grid_data$x2)
 
-gridcenter <- colMeans(griddata[,c("x1", "x2")])
-gridcenter <- t(as.matrix(gridcenter))
+grid_center <- colMeans(grid_data[,c("x1", "x2")])
+grid_center <- t(as.matrix(grid_center))
 
-dist2center <- fDiss(Xr = as.matrix(griddata[,c("x1", "x2")]), 
-                     X2 = gridcenter, method = "mahalanobis", 
-                     center = TRUE, scaled = TRUE)
+dist_2_center <- f_diss(Xr = as.matrix(grid_data[,c("x1", "x2")]), 
+                        Xu = grid_center, 
+                        diss_method = "mahalanobis", 
+                        center = TRUE, scale = TRUE)
 
-plot(dist2center)
-
-
-
-
-
-
-
-
-# Number of samples in the PCA model of the old master
-n <- nrow(pcsmod[[1]]$scores)
-# Components in the PCA model of the old master
-k <- 1:ncol(pcsmod[[1]]$scores)
-
-# F values at 95% significance level for the Hotelling's T2 test
-limpcs <- qf(0.95, df1 = k, df2 = n) * k*(n^2 - 1)/(n*(n-k))
-
-
+plot(dist_2_center)
 
 # USER: indicate here the name of the first wavelength/wavenumber 
 # of the spectra  as it appears in the data table
 firstw <- 352
 
 # R: extract in one object only the spectra from the "data" table...
-spc <- as.matrix(sdata[,which(colnames(sdata) == firstw):ncol(sdata)])
+spc <- as.matrix(s_data[,which(colnames(s_data) == firstw):ncol(s_data)])
 
 # R: remove from "data" spectra...
-sdata <- sdata[,-c(which(colnames(sdata) == firstw):ncol(sdata)), drop = FALSE]
+s_data <- s_data[,-c(which(colnames(s_data) == firstw):ncol(s_data)), drop = FALSE]
 
 # R: put back the spectra in the "data" object but as a 
 # sub-element of "data"
-sdata$spc <-spc
+s_data$spc <-spc
 
 # R: remove the spc object since it is already a sub-element of "data"
 rm(spc)
 
 # R: extract from the column names of the spectra sub-element 
 # the vector of wavelengths/wavenumbers
-wavs <- colnames(sdata$spc)
+wavs <- colnames(s_data$spc)
 
 # R: Since the "wavs" vector is a character string vector
 # we will need to transform it to a numeric vector
@@ -103,7 +93,7 @@ wavs <- as.numeric(wavs)
 xax <- "Wavelength, nm"
 yax <- "Reflectance"
 
-matplot(x = wavs, y = t(sdata$spc),
+matplot(x = wavs, y = t(s_data$spc),
         xlab = xax,
         ylab = yax,
         type = "l",
@@ -126,7 +116,7 @@ grid()
 tp <- "R"
 
 # R: Remove the continuum from the spectra
-sdata$spc_cr <- continuumRemoval(X = sdata$spc, wav = wavs, type = tp)
+s_data$spc_cr <- continuumRemoval(X = s_data$spc, wav = wavs, type = tp)
 
 
 # R: plot the msc spectra of the old and new data
@@ -139,7 +129,7 @@ yax_cr <- "Reflectance (continuum removed)"
 colo <- rgb(red = 0, green = 0, blue = 0, alpha = 0.3)
 
 # R: create the plots
-matplot(x = wavs, y = t(sdata$spc_cr),
+matplot(x = wavs, y = t(s_data$spc_cr),
         xlab = xax,
         ylab = yax_cr,
         type = "l",
@@ -155,7 +145,7 @@ grid()
 # be used to apply this type of correction
 
 # R: apply the Standard Normal Variate on the spectra
-sdata$spc_snv <- standardNormalVariate(X = sdata$spc)
+s_data$spc_snv <- standardNormalVariate(X = s_data$spc)
  
 # R: apply the Standard Normal Variate on the new spectra 
 # in this case we do not need any information form the old data
@@ -170,7 +160,7 @@ yax_snv <- "snv(Reflectance)"
 
 
 # R: create the plots
-matplot(x = wavs, y = t(sdata$spc_snv),
+matplot(x = wavs, y = t(s_data$spc_snv),
         xlab = xax,
         ylab = yax_snv,
         type = "l",
@@ -199,7 +189,7 @@ centering <- TRUE
 scaling <- FALSE
 
 # R: center the data
-sdata$spc_snv_cnt <- scale(sdata$spc_snv, center = centering, scale = scaling)
+s_data$spc_snv_cnt <- scale(s_data$spc_snv, center = centering, scale = scaling)
 
 # R: plot the data
 
@@ -209,7 +199,7 @@ sdata$spc_snv_cnt <- scale(sdata$spc_snv, center = centering, scale = scaling)
 yax_snv <- "Centred snv(Reflectance)"
 
 # R: create the plots
-matplot(x = wavs, y = t(sdata$spc_snv_cnt),
+matplot(x = wavs, y = t(s_data$spc_snv_cnt),
         xlab = xax,
         ylab = yax_snv,
         type = "l",
@@ -225,7 +215,7 @@ centering <- TRUE
 scaling <- TRUE
 
 # R: center the data
-sdata$spc_snv_cs <- scale(sdata$spc_snv, center = centering, scale = scaling)
+s_data$spc_snv_cs <- scale(s_data$spc_snv, center = centering, scale = scaling)
 
 
 # R: plot the data
@@ -236,7 +226,7 @@ sdata$spc_snv_cs <- scale(sdata$spc_snv, center = centering, scale = scaling)
 yax_snv <- "Centred and scaled snv(Reflectance)"
 
 # R: create the plots
-matplot(x = wavs, y = t(sdata$spc_snv_cs),
+matplot(x = wavs, y = t(s_data$spc_snv_cs),
         xlab = xax,
         ylab = yax_snv,
         type = "l",
@@ -244,10 +234,5 @@ matplot(x = wavs, y = t(sdata$spc_snv_cs),
         col = colo,
         main = "Centred and scaled snv(spectra)")
 grid()
-
-
-
-
-
 
 

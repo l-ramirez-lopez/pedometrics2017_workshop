@@ -5,10 +5,11 @@
 # 
 # Inputs:      br_spectra_3.txt
 #
-# Authors:     Leo Ramirez-Lopez & Alexandre Wadoux
-#              ramirez-lopez.l@buchi.com; alexandre.wadoux@wur.nl 
+# Actualization: Melissa Lis-Gutierrez, Tatiana Moreno & Leo Ramirez-Lopez
+#               mlisg@unal.edu.co; tmorenom@unal.edu.co; 
+#               ramirez-lopez.l@buchi.com
 #
-# Date:        Jun 2017
+# Date:        Feb 2022
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # Set the language of R to English
 Sys.setenv(language = "EN")
@@ -20,58 +21,58 @@ require(prospectr)
 require(resemble)
 
 
-# USER: specifiy working directy
+# USER: specify working directory
 wd <- "C:/Users/raml/Documents/pedometrics2017"
 
 # R: Set the working directory
 setwd(wd)
 
-# USER: specifiy the input files (including the subdirectory 
-# that is not specified in the working directy)
-inputfile1 <- "data/br_spectra_3.txt"
+# USER: specify the input files (including the subdirectory 
+# that is not specified in the working directory)
+inputfile_1 <- "data/br_spectra_3.txt"
 
 # R: read the data
-sdata <- read.table(inputfile1, 
+s_data <- read.table(inputfile_1, 
                     header = TRUE, 
                     check.names = FALSE, 
                     sep ="\t")
 
 # USER: indicate here the name of the first wavelength/wavenumber 
 # of the spectra  as it appears in the data table
-firstw <- 401
+first_w <- 401
 
 # R: extract in one object only the spectra from the "data" table...
-spc <- as.matrix(sdata[,which(colnames(sdata) == firstw):ncol(sdata)])
+spc <- as.matrix(s_data[,which(colnames(s_data) == first_w):ncol(s_data)])
 
 # R: remove from "data" spectra...
-sdata <- sdata[,-c(which(colnames(sdata) == firstw):ncol(sdata)), drop = FALSE]
+s_data <- s_data[,-c(which(colnames(s_data) == first_w):ncol(s_data)), drop = FALSE]
 
 # R: put back the spectra in the "data" object but as a 
 # sub-element of "data"
-sdata$spc <-spc
+s_data$spc <-spc
 
 # R: remove the spc object since it is already a sub-element of "data"
 rm(spc)
 
 # R: extract from the column names of the spectra sub-element 
 # the vector of wavelengths/wavenumbers
-wavs <- colnames(sdata$spc)
+wavs <- colnames(s_data$spc)
 
 # R: Since the "wavs" vector is a character string vector
 # we will need to transform it to a numeric vector
 # NOTE that the names of the columns of the spectra 
-# must be writen only with numbers (otherwise they will not be
+# must be written only with numbers (otherwise they will not be
 # correctly converted from characters to numbers)
 wavs <- as.numeric(wavs)
 
 
 # R: apply the Standard Normal Variate on the absorbance spectra
 # in order to account for scattering effects
-sdata$spc_snv <- standardNormalVariate(X = -log(sdata$spc))
+s_data$spc_snv <- standardNormalVariate(X = -log(s_data$spc))
 
 
-# R: get a summary of the sdata object created (Compactly Display the Structure of the object)
-str(sdata)
+# R: get a summary of the s_data object created (Compactly Display the Structure of the object)
+str(s_data)
 
 # This is a dataset that includes soil data for particle size distribution (sand, silt and clay),
 # and vis-NIR spectra
@@ -92,7 +93,7 @@ str(sdata)
 xax <- "Wavelength, nm"
 yax <- "snv(Absrobance)"
 
-matplot(x = wavs, y = t(sdata$spc_snv),
+matplot(x = wavs, y = t(s_data$spc_snv),
         xlab = xax,
         ylab = yax,
         type = "l",
@@ -104,16 +105,16 @@ grid()
 
 #---- 1. Random selection of samples ----
 
-# For this example randomly split the data into two substes
+# For this example randomly split the data into two subsets
 # (select 25% of the data)
 # R: Obtain the number of samples in the data
-ns <- nrow(sdata)
+ns <- nrow(s_data)
 
-# USER: indicate the percentaje that you want to select
+# USER: indicate the percentage that you want to select
 pd <- 0.25
 
 # R: compute the integer number corresponding to the 25% of the samples
-nsamples2select <- round(x = ns * pd, digits = 0)
+nsamples_2_select <- round(x = ns * pd, digits = 0)
 
 # R: compute the vector of sample indexes
 orig_indexes <- 1:ns
@@ -124,17 +125,17 @@ orig_indexes <- 1:ns
 # the set.seed function of R can be used. You just need to provide any 
 # number you want. In this example we use Leo's birthday (in case you 
 # want to send gifts to Switzerland on this date!) ;)
-# Note that if you want to reproduce the random slection on the same vector,
+# Note that if you want to reproduce the random selection on the same vector,
 # you need to use the same random initialization number right after the selection
 # in conjunction with the set.seed function
 set.seed(241180) 
-sel_sample_indx <- sample(x = orig_indexes, size = nsamples2select)
+sel_sample_indx <- sample(x = orig_indexes, size = nsamples_2_select)
 
 # R: now split the data
 # first the indexes randomly found
-xu_data <- sdata[sel_sample_indx,]
+xu_data <- s_data[sel_sample_indx,]
 # Then the rest (i.e. the ones that were not randomly found)
-xr_data <- sdata[-sel_sample_indx,]
+xr_data <- s_data[-sel_sample_indx,]
 
 # Let's assume that the side information is available only for the 
 # xr_data (along with the spectral data) and that the  xr_data only
@@ -144,7 +145,7 @@ xr_data <- sdata[-sel_sample_indx,]
 
 #---- 2. Mahalanobis distance computed on the principal components (PC) space ----
 ## First of all we need to compute the PCs of the spectra
-# for doing so we can use the pcProjection function of the resemble package
+# for doing so we can use the pc_projection function of the resemble package
 
 # Since principal component anylsisis for the spectra does not require
 # any side information for its execution, then we can apply the principal componets
@@ -155,29 +156,30 @@ xr_data <- sdata[-sel_sample_indx,]
 comb_x <- rbind(xr_data$spc_snv, xu_data$spc_snv)
 
 # R: compute the PCs of the combined spectra
-# USER: indicate the maximum amount of cummalative variance explained
+# USER: indicate the maximum amount of cumulative variance explained
 # that needs to be retained in the PCs
-maxexplvar <- 0.99
+max_expl_var <- 0.99
 
-pcspectra <- pcProjection(Xr = comb_x, 
-                          pcSelection = list("cumvar", maxexplvar), 
-                          center = TRUE, scaled = FALSE)
+pc_spectra <- pc_projection(Xr = comb_x, 
+                            pc_selection = list("cumvar", max_expl_var), 
+                            center = TRUE, scaled = FALSE
+)
 
 # R: get a summary of the PC object created (Compactly Display the Structure of the object)
-str(pcspectra)
+str(pc_spectra)
 
 # R: get just the names of the sub-objects in the PC object created 
-names(pcspectra)
+names(pc_spectra)
 
-# The first 237 rows of the score matrix correspond to the socres of the
-# spectral data of xr_data and the remaining ones correspond to the socres of the 
+# The first 237 rows of the score matrix correspond to the scores of the
+# spectral data of xr_data and the remaining ones correspond to the scores of the 
 # xu_data
 
 
 
 # R: plot the first two scores of the PCs of the xr_data
-plot(x = pcspectra$scores[1:nrow(xr_data), 1],
-     y = pcspectra$scores[1:nrow(xr_data), 2],
+plot(x = pc_spectra$scores[1:nrow(xr_data), 1],
+     y = pc_spectra$scores[1:nrow(xr_data), 2],
      xlab = "PC 1",
      ylab = "PC 2",
      type = "p",
@@ -187,8 +189,8 @@ plot(x = pcspectra$scores[1:nrow(xr_data), 1],
 grid()
 
 # R: Add to the above plot the first two scores of the PCs of the xu_data
-points(x = pcspectra$scores[-c(1:nrow(xr_data)), 1],
-       y = pcspectra$scores[-c(1:nrow(xr_data)),2],
+points(x = pc_spectra$scores[-c(1:nrow(xr_data)), 1],
+       y = pc_spectra$scores[-c(1:nrow(xr_data)),2],
        xlab = "PC 1",
        ylab = "PC 2",
        pch = 16,
@@ -196,18 +198,18 @@ points(x = pcspectra$scores[-c(1:nrow(xr_data)), 1],
 
 # Since the xr_data is the dataset that contains the side information
 # we execute the side information analysis on the dissimilarity matrix 
-# of the socres of xr_data (i.e. first 237 rows of  pcspectra$scores)
+# of the scores of xr_data (i.e. first 237 rows of  pc_spectra$scores)
 
 # Step 1: A distance matrix is derived from the spectral matrix X. 
 # This spectral matrix has a side information Y.
 
 # R: First we compute the pairwise Mahalanobis distances
 # To obtain the pairwise Mahalanobis distances we can use the 
-# fDiss of the resemble package
-md_xr <- fDiss(Xr =  pcspectra$scores[1:nrow(xr_data), ], 
-               X2 =  pcspectra$scores[1:nrow(xr_data), ], 
-               method = "mahalanobis", 
-               center = FALSE, scaled = FALSE)
+# f_diss of the resemble package
+md_xr <- f_diss(Xr =  pc_spectra$scores[1:nrow(xr_data), ], 
+                Xu =  pc_spectra$scores[1:nrow(xr_data), ], 
+               diss_method = "mahalanobis", 
+               center = TRUE, scale = FALSE)
 
 # md_xr is the dissimilarity matrix of the spectra in xr_data
 # computed in its PC space
@@ -221,18 +223,19 @@ nearest_n <- NULL
 # R: use a for loop to iterate over each of the columns in the 
 # md_xr matrix
 for(i in 1:nrow(md_xr)){
-  # get the order of the indices of the 
-  # values from the smallest to the largest
-  # and select only the second one (the nearest neighbour)
-  # Since the dissimilarity of a sample to itself it is zero
-  # then the first one in the ordered list does not indicate the 
-  # nearest neighbor but the sample itself
+
+# get the order of the indices of the 
+# values from the smallest to the largest
+# and select only the second one (the nearest neighbour)
+# Since the dissimilarity of a sample to itself it is zero
+# then the first one in the ordered list does not indicate the 
+# nearest neighbor but the sample itself
   
-  # R: Temporarily store the results of the ith iteration in an object (nn_i)
-  nn_i <- order(x = md_xr[,i])[2]
+# R: Temporarily store the results of the ith iteration in an object (nn_i)
+nn_i <- order(x = md_xr[,i])[2]
   
-  # R: concatenate the results (store them in the nearest_n object)
-  nearest_n <- c(nearest_n, nn_i)
+# R: concatenate the results (store them in the nearest_n object)
+nearest_n <- c(nearest_n, nn_i)
 }
 
 # The resulting object is now a vector containing the 
@@ -242,11 +245,11 @@ for(i in 1:nrow(md_xr)){
 nearest_n
 
 # Alternatively you can use an internal function of the resemble package 
-# to identify the nearest neighbors from a squared symetric matrix of 
+# to identify the nearest neighbors from a squared symmetric matrix of 
 # dissimilarities. In this case a matrix with one column is returned 
-nearest_n2 <- resemble:::which_min(X = md_xr, cores = 1)
+nearest_n_2 <- resemble:::which_min(X = md_xr)
 
-nearest_n2
+nearest_n_2
 
 # Step 3. Compare the side information of each sample in X to the side 
 # information of its corresponding closest sample. Evaluate the statistics 
@@ -268,16 +271,16 @@ xr_data[nearest_n,"Clay"]
 # square of differences (RMSD)
 
 # R: first compute the vector of squared differences...
-sqdiff <- (xr_data[,"Clay"] - xr_data[nearest_n,"Clay"])^2
+sq_diff <- (xr_data[,"Clay"] - xr_data[nearest_n,"Clay"])^2
 
 # R: ... then compute the average...
-mean_sqdiff <- mean(sqdiff)
+mean_sq_diff <- mean(sq_diff)
 
 # R: ... and finally compute the RMSD
-rmsd <- mean_sqdiff^0.5
+rmsd <- mean_sq_diff^0.5
 
 # R: You can also compute the correlation coefficient between the
-# the clay content values of the samples and the caly contetnt 
+# the clay content values of the samples and the clay content 
 # values of their nearest neighbors 
 r <- cor(xr_data[,"Clay"], xr_data[nearest_n,"Clay"])
 
@@ -299,17 +302,17 @@ grid()
 # (e.g. that minimizes the RMSD)
 
 
-# The simEval fucntion from the resemble package can be used to asses the 
+# The sim_eval  function from the resemble package can be used to asses the 
 # reliability of the dissimilarity matrices
 
-# R: Use the simEval function to get the RMSD and the r
-d_eval <- simEval(d = md_xr, sideInf = xr_data$Clay)
+# R: Use the sim_eval  function to get the RMSD and the r
+d_eval <- sim_eval(d = md_xr, side_info = as.matrix(xr_data$Clay))
 
-# R: get a summary of the d_eval object created with the simEval fucntion 
+# R: get a summary of the d_eval object created with the sim_eval  function 
 # (Compactly Display the Structure of the object)
 str(d_eval)
 
-# R: get just the names of the sub-objects in the simEval object created 
+# R: get just the names of the sub-objects in the sim_eval  object created 
 names(d_eval)
 
 # R: get the evaluation results
@@ -329,28 +332,28 @@ d_eval$firstNN
 max_pcs <- 2:20
 
 # USER: First create an empty object to store the results of the evaluation 
-# results for each dissimilarity matrix computed on the diffrent number of PCs
+# results for each dissimilarity matrix computed on the different number of PCs
 eval_results <- NULL
 
 # R: use a for loop to iterate over each of the columns in the 
 # md_xr matrix
 for(i in max_pcs){
-  # R: Temporarily store the pcProjection results of the ith iteration 
-  # in an object (i_pcspectra)
-  i_pcspectra <- pcProjection(Xr = comb_x, 
-                              pcSelection = list("manual", i), 
-                              center = TRUE, scaled = FALSE)
+  # R: Temporarily store the pc_projection results of the ith iteration 
+  # in an object (i_pc_spectra)
+  i_pc_spectra <- pc_projection(Xr = comb_x, 
+                                pc_selection = list("manual", i), 
+                                center = TRUE, scaled = FALSE)
   
-  # R: Temporarily store the fDiss results of the ith iteration 
+  # R: Temporarily store the f_diss results of the ith iteration 
   # in an object (i_md_xr)
-  i_md_xr <- fDiss(Xr =  i_pcspectra$scores[1:nrow(xr_data), ], 
-                   X2 =  i_pcspectra$scores[1:nrow(xr_data), ], 
-                   method = "mahalanobis", 
-                   center = FALSE, scaled = FALSE)
+  i_md_xr <- f_diss(Xr =  i_pc_spectra$scores[1:nrow(xr_data), ], 
+                    Xu =  i_pc_spectra$scores[1:nrow(xr_data), ], 
+                   diss_method = "mahalanobis", 
+                   center = TRUE, scale = FALSE)
   
-  # R: Temporarily store the results of the simEval of the ith iteration 
+  # R: Temporarily store the results of the sim_eval  of the ith iteration 
   # in an object (nn_i)
-  i_eval <- simEval(d = i_md_xr, sideInf = xr_data$Clay)
+  i_eval <- sim_eval (d = i_md_xr, side_info = xr_data$Clay)
 
   # R: concatenate the results by rows (store them in the eval_results object)  
   eval_results <- rbind(eval_results, i_eval$eval)
@@ -375,7 +378,7 @@ grid()
 
 # The above code/procedures to select the optimal number of PCs 
 # is summarized in one single function in the resemble package
-# The orthoDiss function offers the possibility to compute the 
+# The ortho_diss function offers the possibility to compute the 
 # Mahalanobis distance in the PC space by retaining the optimal 
 # number of PCs that minimize the RMSD
 
@@ -383,25 +386,25 @@ grid()
 # function (which is the side information corresponding to the spectra in Xr)
 
 # R: compute the Mahalanobis distance in the PC space suing the 
-# side information approach ("opc" method which is specified in the pcSelection 
+# side information approach ("opc" method which is specified in the pc_selection 
 # argument). In this case we evaluate a sequence of dissimilarity matrices
 # from 2 to 20
-opcd <- orthoDiss(Xr = xr_data$spc_snv, 
-                  X2 = xu_data$spc_snv, 
-                  Yr = xr_data$Clay, 
-                  pcSelection = list("opc", 20), 
-                  method = "pca", 
-                  center = TRUE, scaled = FALSE)
+opc_d <- ortho_diss(Xr = xr_data$spc_snv, 
+                    Xu = xu_data$spc_snv, 
+                    Yr = xr_data$Clay, 
+                    pc_selection = list("opc", 20), 
+                    diss_method = "pca", 
+                    center = TRUE, scaled = FALSE)
 
-# R: get a summary of the opcd object created with the orthoDiss fucntion 
+# R: get a summary of the opc_d object created with the ortho_diss function 
 # (Compactly Display the Structure of the object)
-str(opcd)
+str(opc_d)
 
-# R: get just the names of the sub-objects in the opcd object created 
-names(opcd)
+# R: get just the names of the sub-objects in the opc_d object created 
+names(opc_d)
 
-# R: get the optimal numer of PCs retained
-opcd$n.components
+# R: get the optimal number of PCs retained
+opc_d$n.components
 
 # R: get the dissimilarity matrix
-opcd$dissimilarity
+opc_d$dissimilarity
